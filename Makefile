@@ -8,8 +8,8 @@ build:
 	kubectl apply -f tikv-statefulset.yaml
 #	kubectl apply -f tidb-peer-svc.yaml  
 	kubectl apply -f tidb-service.yaml  
-	#kubectl apply -f tidb-statefulset.yaml  
+#	kubectl apply -f tidb-statefulset.yaml  
 	kubectl apply -f tidb-deployment.yaml  
 	kubectl apply -f tidb-init-job.yaml  
 clean:
-	kubectl delete ns test4
+	kubectl delete ns endgame
