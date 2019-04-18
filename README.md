@@ -139,7 +139,9 @@ env:
 
 ### 3. 验证
 使用`make build`命令即可在GKE集群上搭建TiDB集群。待所有实例运行正常以后，可以使用MySQL Client连接TiDB并向其中写入数据。
+
 ![](https://github.com/mlycore/TiWork/blob/master/pics/tidb.png)
+
 ![](https://github.com/mlycore/TiWork/blob/master/pics/mysql.png)
 
 ### 4. 拓展
@@ -176,4 +178,5 @@ flush privileges;
 ### 5. 参考资料
 
 [TiDB on docker](https://pingcap.com/docs-cn/op-guide/docker-deployment/)
+
 [TiDB Operator](https://github.com/tidb-operator)
