@@ -1,6 +1,6 @@
 build:
-	kubectl create ns test4
-	kubectl create configmap tidb-init -n test4 --from-file=init.sql
+	kubectl create ns endgame 
+	kubectl create configmap tidb-init -n endgame --from-file=init.sql
 	kubectl apply -f pd-peer-svc.yaml  
 	kubectl apply -f pd-svc.yaml  
 	kubectl apply -f pd-sts.yaml  
