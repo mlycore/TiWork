@@ -1,23 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  annotations:
-    author: liyao.miao
-    deployment.kubernetes.io/revision: "33"
-    image: artifact.paas.yp/yeepay-docker-dev-local/yce:201904082316
-    kubernetes.io/change-cause: 升级至：artifact.paas.yp/yeepay-docker-dev-local/yce:201904082316
-    lastModified: liyao.miao
-    lastModifiedAt: 2019-04-08 23:26:15.934904884 +0800 CST m=+390710.606944604
-    reason: 升级至：artifact.paas.yp/yeepay-docker-dev-local/yce:201904082316
-  creationTimestamp: 2019-01-04T08:20:31Z
-  generation: 36
   labels:
     name: yce-backend
   name: yce-backend
   namespace: yce
-  resourceVersion: "34402537"
-  selfLink: /apis/extensions/v1beta1/namespaces/yce/deployments/yce-backend
-  uid: 99ed2fcb-0ff9-11e9-95da-e41f13446450
 spec:
   minReadySeconds: 30
   progressDeadlineSeconds: 600
@@ -34,153 +21,45 @@ spec:
   template:
     metadata:
       annotations:
-        noise-oldRs: yce-backend-668b6fc954
-        noise-timestamp: 2019-04-08T23:26:15+08:00
-        noise-userName: liyao.miao
-        noise-uuid: 8831f892-9dd4-4d71-831b-338f702cb42e
-      creationTimestamp: null
+        prometheus.io/path: /metrics
+        prometheus.io/port: "10080"
+        prometheus.io/scrape: "true"
       labels:
-        name: yce-backend
+        name: tidb
     spec:
       containers:
-      - env:
-        - name: DB_HOST
-          value: 10.151.32.63
-        - name: DB_PORT
-          value: "3306"
-        - name: DB_USER
-          value: root
-        - name: DB_PASS
-          value: root
-        - name: DB_NAME
-          value: yce
-        - name: REDIS_HOST
-          value: 10.151.33.87
-        - name: REDIS_PORT
-          value: "32379"
-        - name: QA
-          value: QA
-        - name: SIAGENT_PORT
-          value: "8080"
-        - name: SIAGENT_HOST
-          value: siagent-svc
-        - name: ENVIRONMENT
-          value: QA
-        - name: REDIS_MAX_ACTIVE_CONN
-          value: "5000"
-        - name: GOOFY_HOST
-          value: 10.151.32.27:32282
-        - name: REDIS_MAX_IDLE_CONN
-          value: "1000"
-        - name: AUDITOR_HOST
-          value: auditor-svc.yce
-        - name: AUDITOR_PORT
-          value: "8080"
-        - name: YP_APP_NAME
-          value: yce-backend
-        - name: YP_DATA_CENTER
-          value: QA
-        - name: YP_DEPLOY_ENV
-          value: product
-        - name: DUBBO_APPLICATION_ENVIRONMENT
-          value: product
-        - name: REGISTRY_TAGS
-          value: "10"
-        - name: HEALTHCHECKMODE
-          value: ycelet
-        - name: CONTAINER_IMAGES
-          value: artifact.paas.yp/yeepay-docker-dev-local/troubleshooting:201809271441
-        - name: CONTAINER_PORT
-          value: "8090"
-        - name: YCELET_PORT
-          value: "29998"
-        - name: DELETE_MODE
-          value: normal
-        - name: LOGLEVEL
-          value: INFO
-        - name: REGISTRY_BACKEND
-          value: artifactory
-        - name: REGISTRY_ENV
-          value: QA
-        - name: REGISTRY_CERT
-          value: artifactory.crt
-        - name: REGISTRY_HOST
-          value: artifact.paas.yp
-        - name: REGISTRY_PORT
-          value: "443"
-        - name: REGISTRY_PREFIX
-          value: artifact.paas.yp/yeepay-docker-dev-local
-        - name: YP_JVM_RESOURCE_CPU
-          value: "2"
-        - name: YP_JVM_RESOURCE_MEMORY
-          value: 4G
-        image: artifact.paas.yp/yeepay-docker-dev-local/yce:201904082316
+      - command:
+        - /bin/sh
+        - -ec
+        - |
+          HOSTNAME=$(hostname)
+          echo $HOSTNAME
+          /tidb-server --store=tikv \
+              --path=${PD_SERVICE_NAME}:2379
+        image: pingcap/tidb:v2.1.0
         imagePullPolicy: IfNotPresent
-        name: yce-backend
+        env:
+        - name: PD_SERVICE_NAME
+          value: pd.endgame
+        name: tidb
         ports:
-        - containerPort: 8080
-          name: port1
+        - containerPort: 4000
+          name: server
           protocol: TCP
-        resources:
-          limits:
-            cpu: "2"
-            memory: 4G
-          requests:
-            cpu: 200m
-            memory: 2G
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /go/certs
-          name: yce-nginx-cert
-      - image: artifact.paas.yp/yeepay-docker-dev-local/troubleshooting:201809271441
-        imagePullPolicy: IfNotPresent
-        name: debug
-        ports:
-        - containerPort: 8090
+        - containerPort: 10080
+          name: status
           protocol: TCP
-        resources:
-          limits:
-            cpu: 200m
-            memory: 200M
-          requests:
-            cpu: 50m
-            memory: 50M
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /status
+            port: 10080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
       dnsPolicy: ClusterFirst
-      imagePullSecrets:
-      - name: myregistrykey
       restartPolicy: Always
-      schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-      volumes:
-      - configMap:
-          defaultMode: 420
-          items:
-          - key: cert.cer
-            path: cert.cer
-          - key: server.key
-            path: server.key
-          name: yce-nginx-cert
-        name: yce-nginx-cert
-status:
-  availableReplicas: 3
-  conditions:
-  - lastTransitionTime: 2019-01-04T08:20:31Z
-    lastUpdateTime: 2019-04-08T15:27:22Z
-    message: ReplicaSet "yce-backend-64d9947f8" has successfully progressed.
-    reason: NewReplicaSetAvailable
-    status: "True"
-    type: Progressing
-  - lastTransitionTime: 2019-04-15T10:16:57Z
-    lastUpdateTime: 2019-04-15T10:16:57Z
-    message: Deployment has minimum availability.
-    reason: MinimumReplicasAvailable
-    status: "True"
-    type: Available
-  observedGeneration: 36
-  readyReplicas: 3
-  replicas: 3
-  updatedReplicas: 3

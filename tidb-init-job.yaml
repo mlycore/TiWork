@@ -28,10 +28,12 @@ spec:
         - "/bin/sh"
         - "-ec"
         - |
-           mysql -h ${TIDB_SERVICE_NAME} -P4000 -uroot -e "source init.sql" 
+           mysql -h ${TIDB_SERVICE_NAME} -P${TIDB_SERVICE_PORT} -uroot -e "source init.sql" 
         env:
         - name: TIDB_SERVICE_NAME
           value: tidb.endgame
+        - name: TIDB_SERVICE_PORT
+          value: "4000"
         volumeMounts:
         - name: initsql
           mountPath: /init.sql
