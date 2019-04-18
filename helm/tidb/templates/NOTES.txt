@@ -1,0 +1,4 @@
+Cluster spinning up
+1. List Pods 
+     kubectl get pod -n {{ .Values.namespace }} -o wide
+

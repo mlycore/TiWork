@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    name: {{ .Values.pd.name }} 
+  name: {{ .Values.pd.name }} 
+  namespace: {{ .Values.namespaces }} 
+spec:
+  podManagementPolicy: Parallel
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: pd 
+  serviceName: pd-peer
+  template:
+    metadata:
+      labels:
+        name: pd 
+    spec:
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: ""
+        name: timezone
+      containers:
+      - command:
+        - /bin/sh
+        - -ec
+        - |
+          HOSTNAME=$(hostname)
+          PEERS=""
+            for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                PEERS="${PEERS}${PEERS:+,}${SET_NAME}-${i}=http://${SET_NAME}-${i}.${PEER_SERVICE_NAME}:2380"
+            done
+          /pd-server --name=${HOSTNAME} \
+              --data-dir=/var/lib/pd  \
+              --client-urls=http://0.0.0.0:2379 \
+              --advertise-client-urls=http://${HOSTNAME}.${PEER_SERVICE_NAME}:2379 \
+              --peer-urls=http://0.0.0.0:2380 \
+              --advertise-peer-urls=http://${HOSTNAME}.${PEER_SERVICE_NAME}:2380 \
+              --initial-cluster=${PEERS}
+        env:
+        - name: PEER_SERVICE_NAME
+          value: {{ .Values.pd.name }}-peer
+        - name: SERVICE_NAME
+          value: {{ .Values.pd.name }} 
+        - name: SET_NAME
+          value: {{ .Values.pd.name }} 
+        - name: INITIAL_CLUSTER_SIZE
+          value: "3"
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: timezone
+          readOnly: true
+        name: tidb
+        image: {{ .Values.pd.image | default "pingcap/pd:v2.1.0" }}
+        imagePullPolicy: IfNotPresent
+        name: pd
+        ports:
+        - containerPort: 2380
+          name: server
+          protocol: TCP
+        - containerPort: 2379
+          name: client
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/pd
+          name: {{ .Values.pd.name }} 
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    rollingUpdate:
+      partition: 3
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: {{ .Values.pd.name }} 
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      dataSource: null
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: standard
+    status:
+      phase: Pending

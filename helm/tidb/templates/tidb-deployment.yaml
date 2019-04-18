@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Values.tidb.name }}
+  name: {{ .Values.tidb.name }}
+  namespace: {{ .Values.namespace }} 
+spec:
+  minReadySeconds: 30
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: {{ .Values.tidb.name }} 
+  strategy:
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.tidb.name }} 
+    spec:
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: ""
+        name: timezone
+      containers:
+      - command:
+        - /bin/sh
+        - -ec
+        - |
+          HOSTNAME=$(hostname)
+          echo $HOSTNAME
+          /tidb-server --store=tikv \
+              --path=${PD_SERVICE_NAME}:2379
+        image: {{ .Values.tidb.image | default "pingcap/tidb:v2.1.0" }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PD_SERVICE_NAME
+          value: {{ .Values.pd.name }}.{{ .Values.namespace }}
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: timezone
+          readOnly: true
+        name: tidb
+        ports:
+        - containerPort: 4000
+          name: server
+          protocol: TCP
+        - containerPort: 10080
+          name: status
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /status
+            port: 10080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

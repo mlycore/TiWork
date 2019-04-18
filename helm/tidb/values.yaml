@@ -1,0 +1,21 @@
+# Default values for tidb.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: endgame 
+
+pd:
+  name: pd
+  image: pingcap/pd:v2.1.0
+
+tikv:
+  name: tikv
+  image: pingcap/tikv:v2.1.0
+
+tidb:
+  name: tidb
+  image: pingcap/tidb:v2.1.0
+  service:
+    port: "4000"
+
+

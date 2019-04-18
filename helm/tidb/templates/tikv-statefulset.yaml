@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    name: tikv
-  name: tikv
-  namespace: endgame
+    name: {{ .Values.tikv.name }}
+  name: {{ .Values.tikv.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   podManagementPolicy: Parallel
   replicas: 3
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: tikv
-  serviceName: tikv-peer
+      name: {{ .Values.tikv.name }} 
+  serviceName: {{ .Values.tikv.name }}-peer 
   template:
     metadata:
       labels:
-        name: tikv
+        name: {{ .Values.tikv.name }}
     spec:
       volumes:
       - hostPath:
@@ -29,24 +29,22 @@ spec:
         - -ec
         - |
           HOSTNAME=$(hostname)
-          echo $HOSTNAME
           /tikv-server --addr=0.0.0.0:20160 \
               --advertise-addr=${HOSTNAME}.${HEADLESS_SERVICE_NAME}:20160 \
               --data-dir=/var/lib/tikv \
               --pd=${PD_SERVICE_NAME}:2379
         env:
         - name: HEADLESS_SERVICE_NAME
-          value: tikv-peer
+          value: {{ .Values.tikv.name }}-peer
         - name: PD_SERVICE_NAME
-          value: pd.endgame 
+          value: {{ .Values.pd.name }}.{{ .Values.namespace }}
         volumeMounts:
         - mountPath: /etc/localtime
           name: timezone
           readOnly: true
-        name: tidb
-        image: pingcap/tikv:v2.1.0
+        image: {{ .Values.tikv.image | default "pingcap/tikv:v2.1.0" }}
         imagePullPolicy: IfNotPresent
-        name: tikv
+        name: {{ .Values.tikv.name }}
         ports:
         - containerPort: 20160
           name: server
@@ -56,7 +54,7 @@ spec:
         terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /var/lib/tikv
-          name: tikv
+          name: {{ .Values.tikv.name }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       securityContext: {}
@@ -68,7 +66,7 @@ spec:
   volumeClaimTemplates:
   - metadata:
       creationTimestamp: null
-      name: tikv
+      name: {{ .Values.tikv.name }}
     spec:
       accessModes:
       - ReadWriteOnce

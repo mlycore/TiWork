@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: {{ .Values.tikv.name }}
+  name: {{ .Values.tikv.name }}-peer
+  namespace: {{ .Values.namespace }} 
+spec:
+  clusterIP: None
+  ports:
+  - name: peer
+    port: 20160
+    protocol: TCP
+    targetPort: 20160
+  selector:
+    name: {{ .Values.tikv.name }} 
+  sessionAffinity: None
+  type: ClusterIP
