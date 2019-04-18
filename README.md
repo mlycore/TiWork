@@ -178,9 +178,17 @@ flush privileges;
 #### 2. Helm安装
 Helm提供了强大而灵活的模板渲染能力，让交付部署变得非常简洁和高效。这里的安装操作步骤:
 1. 利用`kubectl create ns endgame`创建命名空间
-2. 利用`kubectl create configmap tidb-init -n endgame --from-file=helm/scripts/init.sql`创建初始化密码配置
+2. 利用`kubectl create configmap tidb-init -n endgame --from-file=helm/tidb/scripts/init.sql`创建初始化密码配置
 3. 利用`helm install helm/tidb --name=tidb --namespace=endgame`进行部署
 4. 利用`helm del --purge tidb`销毁部署
+
+#### 3. Kustomize
+不同于Helm, Kustomize通过类似Sed和Merge的操作，为用户带来了一种简单易用的多版本Yaml定制和管理体验。示例操作步骤:
+1. 利用`kubectl create ns endgame`创建命名空间
+2. 利用`kubectl create configmap tidb-init -n endgame --from-file=kustomize/scripts/init.sql`创建初始化密码配置
+3. 利用`kustomize build kustomize/overlays/dev | kubectl apply -f -`进行部署
+4. 利用`kustomize build kustomize/overlays/dev | kubectl delete -f -`销毁部署
+
 
 ### 5. 参考资料
 
