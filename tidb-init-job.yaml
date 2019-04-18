@@ -4,7 +4,7 @@ metadata:
   labels:
     name: tidb-init-job
   name: tidb-init-job
-  namespace: test4
+  namespace: endgame 
 spec:
   backoffLimit: 1000
   template:
@@ -28,10 +28,10 @@ spec:
         - "/bin/sh"
         - "-ec"
         - |
-           mysql -h ${TIDBSERVICE} -P4000 -uroot -e "source init.sql" 
+           mysql -h ${TIDB_SERVICE_NAME} -P4000 -uroot -e "source init.sql" 
         env:
-        - name: TIDBSERVICE
-          value: tidb.test4
+        - name: TIDB_SERVICE_NAME
+          value: tidb.endgame
         volumeMounts:
         - name: initsql
           mountPath: /init.sql

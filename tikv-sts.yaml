@@ -4,7 +4,7 @@ metadata:
   labels:
     name: tikv
   name: tikv
-  namespace: test4
+  namespace: endgame
 spec:
   podManagementPolicy: Parallel
   replicas: 3
@@ -15,10 +15,6 @@ spec:
   serviceName: tikv-peer
   template:
     metadata:
-      annotations:
-        prometheus.io/path: /metrics
-        prometheus.io/port: "9091"
-        prometheus.io/scrape: "true"
       labels:
         name: tikv
     spec:
@@ -32,10 +28,12 @@ spec:
           /tikv-server --addr=0.0.0.0:20160 \
               --advertise-addr=${HOSTNAME}.${HEADLESS_SERVICE_NAME}:20160 \
               --data-dir=/var/lib/tikv \
-              --pd=pd.test4:2379
+              --pd=${PD_SERVICE_NAME}:2379
         env:
         - name: HEADLESS_SERVICE_NAME
           value: tikv-peer
+        - name: PD_SERVICE_NAME
+          value: pd.endgame 
         image: pingcap/tikv:v2.1.0
         imagePullPolicy: IfNotPresent
         name: tikv

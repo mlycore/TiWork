@@ -4,7 +4,7 @@ metadata:
   labels:
     name: pd 
   name: pd
-  namespace: test4
+  namespace: endgame 
 spec:
   podManagementPolicy: Parallel
   replicas: 3
@@ -15,10 +15,6 @@ spec:
   serviceName: pd-peer
   template:
     metadata:
-      annotations:
-        prometheus.io/path: /metrics
-        prometheus.io/port: "2379"
-        prometheus.io/scrape: "true"
       labels:
         name: pd 
     spec:

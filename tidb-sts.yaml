@@ -4,7 +4,7 @@ metadata:
   labels:
     name: tidb
   name: tidb
-  namespace: test4
+  namespace: endgame 
 spec:
   podManagementPolicy: Parallel
   replicas: 2
@@ -30,9 +30,12 @@ spec:
           HOSTNAME=$(hostname)
           echo $HOSTNAME
           /tidb-server --store=tikv \
-              --path=pd.test4:2379
+              --path=${PD_SERVICE_NAME}:2379
         image: pingcap/tidb:v2.1.0
         imagePullPolicy: IfNotPresent
+        env:
+        - name: PD_SERVICE_NAME
+          value: pd.endgame
         name: tidb
         ports:
         - containerPort: 4000
