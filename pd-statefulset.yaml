@@ -18,6 +18,11 @@ spec:
       labels:
         name: pd 
     spec:
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: ""
+        name: timezone
       containers:
       - command:
         - /bin/sh
@@ -48,6 +53,11 @@ spec:
           value: pd
         - name: INITIAL_CLUSTER_SIZE
           value: "3"
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: timezone
+          readOnly: true
+        name: tidb
         image: pingcap/pd:v2.1.0
         imagePullPolicy: IfNotPresent
         name: pd

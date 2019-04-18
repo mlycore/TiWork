@@ -18,6 +18,11 @@ spec:
       labels:
         name: tikv
     spec:
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: ""
+        name: timezone
       containers:
       - command:
         - /bin/sh
@@ -34,6 +39,11 @@ spec:
           value: tikv-peer
         - name: PD_SERVICE_NAME
           value: pd.endgame 
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: timezone
+          readOnly: true
+        name: tidb
         image: pingcap/tikv:v2.1.0
         imagePullPolicy: IfNotPresent
         name: tikv
