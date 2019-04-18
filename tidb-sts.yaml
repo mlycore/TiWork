@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    name: tidb
+  name: tidb
+  namespace: test4
+spec:
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: tidb
+  serviceName: tidb-peer
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "10080"
+        prometheus.io/scrape: "true"
+      labels:
+        name: tidb
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -ec
+        - |
+          HOSTNAME=$(hostname)
+          echo $HOSTNAME
+          /tidb-server --store=tikv \
+              --path=pd.test4:2379
+        image: pingcap/tidb:v2.1.0
+        imagePullPolicy: IfNotPresent
+        name: tidb
+        ports:
+        - containerPort: 4000
+          name: server
+          protocol: TCP
+        - containerPort: 10080
+          name: status
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /status
+            port: 10080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    rollingUpdate:
+      partition: 2
+    type: RollingUpdate
