@@ -175,6 +175,13 @@ flush privileges;
 
 注意：出于安全考虑，更规范的做法是用Secrets保存密码。更进一步，不管是ConfigMap还是Secrets，在使用完毕后要尽快删除，并且在初始密码使用后应当尽快再次修改密码。
 
+#### 2. Helm安装
+Helm提供了强大而灵活的模板渲染能力，让交付部署变得非常简洁和高效。这里的安装操作步骤:
+1. 利用`kubectl create ns endgame`创建命名空间
+2. 利用`kubectl create configmap tidb-init -n endgame --from-file=helm/scripts/init.sql`创建初始化密码配置
+3. 利用`helm install helm/tidb --name=tidb --namespace=endgame`进行部署
+4. 利用`helm del --purge tidb`销毁部署
+
 ### 5. 参考资料
 
 [TiDB on docker](https://pingcap.com/docs-cn/op-guide/docker-deployment/)
