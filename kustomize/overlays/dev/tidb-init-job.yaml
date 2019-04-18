@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tidb-init-job
+  namespace: endgame 
+spec:
+  template:
+    spec:
+      containers:
+      - name: tidb-init-job
+        env:
+        - name: TIDB_SERVICE_NAME
+          value: dev-tidb.endgame

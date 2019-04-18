@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tikv
+  namespace: endgame
+spec:
+  serviceName: dev-tikv-peer
+  template:
+    spec:
+      containers:
+      - name: tikv
+        env:
+        - name: HEADLESS_SERVICE_NAME
+          value: dev-tikv-peer
+        - name: PD_SERVICE_NAME
+          value: dev-pd.endgame 

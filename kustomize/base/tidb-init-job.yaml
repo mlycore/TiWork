@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    name: tidb-init-job
+  name: tidb-init-job
+  namespace: endgame 
+spec:
+  backoffLimit: 1000
+  template:
+    metadata:
+      labels:
+        name: tidb-init-job
+    spec:
+      volumes:
+      - configMap:
+          defaultMode: 511
+          items:
+          - key: init.sql 
+            path: init.sql 
+          name: tidb-init 
+        name: initsql
+      containers:
+      - image: arey/mysql-client:latest
+        imagePullPolicy: IfNotPresent 
+        name: tidb-init-job
+        command:
+        - "/bin/sh"
+        - "-ec"
+        - |
+           mysql -h ${TIDB_SERVICE_NAME} -P${TIDB_SERVICE_PORT} -uroot -e "source init.sql" 
+        env:
+        - name: TIDB_SERVICE_NAME
+          value: tidb.endgame
+        - name: TIDB_SERVICE_PORT
+          value: "4000"
+        volumeMounts:
+        - name: initsql
+          mountPath: /init.sql
+          subPath: init.sql
+      dnsPolicy: ClusterFirst
+      restartPolicy: OnFailure
+      schedulerName: default-scheduler

@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tidb 
+  namespace: endgame 
+spec:
+  template:
+    spec:
+      containers:
+      - name: tidb
+        env:
+        - name: PD_SERVICE_NAME
+          value: dev-pd.endgame

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tikv-peer
+  labels:
+    name: tikv
+  namespace: endgame 
+spec:
+  clusterIP: None
+  ports:
+  - name: peer
+    port: 20160
+    protocol: TCP
+    targetPort: 20160
+  selector:
+    name: tikv
+  sessionAffinity: None
+  type: ClusterIP

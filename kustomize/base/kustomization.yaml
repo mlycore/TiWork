@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- pd-peer-service.yaml
+- pd-service.yaml
+- pd-statefulset.yaml
+- tidb-deployment.yaml
+- tidb-init-job.yaml
+- tidb-service.yaml
+- tikv-peer-service.yaml
+- tikv-statefulset.yaml
