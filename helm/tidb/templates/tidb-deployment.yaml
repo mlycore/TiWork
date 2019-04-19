@@ -8,7 +8,7 @@ metadata:
 spec:
   minReadySeconds: 30
   progressDeadlineSeconds: 600
-  replicas: 3
+  replicas: {{ .Values.tidb.replicas }} 
   revisionHistoryLimit: 10
   selector:
     matchLabels:

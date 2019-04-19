@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Values.namespaces }} 
 spec:
   podManagementPolicy: Parallel
-  replicas: 3
+  replicas: {{ .Values.pd.replicas }} 
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -29,6 +29,27 @@ spec:
         - -ec
         - |
           HOSTNAME=$(hostname)
+          SET_ID=${HOSTNAME:5:${#HOSTNAME}}
+          if [ "${SET_ID}" -ge ${INITIAL_CLUSTER_SIZE} ]; then
+              PEERS=""
+              for i in $(seq 0 ${SET_ID}); do
+                  PEERS="${PEERS}${PEERS:+,}${SET_NAME}-${i}=http://${SET_NAME}-${i}.${SET_NAME}:2380"
+              done
+              export INITIAL_CLUSTER=${PEERS}
+              export INITIAL_CLUSTER_STATE=existing
+              echo "Adding new member"
+              EPS=""
+              for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                  EPS="${EPS}${EPS:+,}http://${SET_NAME}-${i}.${SET_NAME}:2379"
+              done
+              echo ${EPS}
+              /pd-server --name=${HOSTNAME} \
+                --client-urls="http://${HOSTNAME}.${PEEER_SERVICE_NAME}:2379" \
+                --peer-urls="http://${HOSTNAME}.${PEER_SERVICE_NAME}:2380" \
+                --initial-cluster ${INITIAL_CLUSTER} \
+                --initial-cluster-state ${INITIAL_CLUSTER_STATE} \
+                --join="http://${EPS}"
+          fi
           PEERS=""
             for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
                 PEERS="${PEERS}${PEERS:+,}${SET_NAME}-${i}=http://${SET_NAME}-${i}.${PEER_SERVICE_NAME}:2380"
@@ -48,7 +69,7 @@ spec:
         - name: SET_NAME
           value: {{ .Values.pd.name }} 
         - name: INITIAL_CLUSTER_SIZE
-          value: "3"
+          value: "{{ .Values.pd.initialsize }}"
         volumeMounts:
         - mountPath: /etc/localtime
           name: timezone

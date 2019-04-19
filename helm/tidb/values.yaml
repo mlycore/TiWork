@@ -7,14 +7,18 @@ namespace: endgame
 pd:
   name: pd
   image: pingcap/pd:v2.1.0
+  replicas: 3
+  initialsize: 3
 
 tikv:
   name: tikv
   image: pingcap/tikv:v2.1.0
+  replicas: 3
 
 tidb:
   name: tidb
   image: pingcap/tidb:v2.1.0
+  replicas: 2
   service:
     port: "4000"
 
