@@ -29,27 +29,18 @@ spec:
         - -ec
         - |
           HOSTNAME=$(hostname)
-          SET_ID=${HOSTNAME:5:${#HOSTNAME}}
+          SET_ID=$(echo ${HOSTNAME} | cut -d"-" -f2)
           if [ "${SET_ID}" -ge ${INITIAL_CLUSTER_SIZE} ]; then
-              PEERS=""
-              for i in $(seq 0 ${SET_ID}); do
-                  PEERS="${PEERS}${PEERS:+,}${SET_NAME}-${i}=http://${SET_NAME}-${i}.${SET_NAME}:2380"
-              done
-              export INITIAL_CLUSTER=${PEERS}
-              export INITIAL_CLUSTER_STATE=existing
               echo "Adding new member"
-              EPS=""
-              for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
-                  EPS="${EPS}${EPS:+,}http://${SET_NAME}-${i}.${SET_NAME}:2379"
-              done
-              echo ${EPS}
-              /pd-server --name=${HOSTNAME} \
-                --client-urls="http://${HOSTNAME}.${PEEER_SERVICE_NAME}:2379" \
-                --peer-urls="http://${HOSTNAME}.${PEER_SERVICE_NAME}:2380" \
-                --initial-cluster ${INITIAL_CLUSTER} \
-                --initial-cluster-state ${INITIAL_CLUSTER_STATE} \
-                --join="http://${EPS}"
+              exec /pd-server --name=${HOSTNAME} \
+                --data-dir=/var/lib/pd  \
+                --client-urls=http://0.0.0.0:2379 \
+                --advertise-client-urls=http://${HOSTNAME}.${PEER_SERVICE_NAME}:2379 \
+                --peer-urls=http://0.0.0.0:2380 \
+                --advertise-peer-urls=http://${HOSTNAME}.${PEER_SERVICE_NAME}:2380 \
+                --join=http://pd-0.${PEER_SERVICE_NAME}:2379
           fi
+          echo "Initial starting"
           PEERS=""
             for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
                 PEERS="${PEERS}${PEERS:+,}${SET_NAME}-${i}=http://${SET_NAME}-${i}.${PEER_SERVICE_NAME}:2380"
