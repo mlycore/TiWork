@@ -194,7 +194,7 @@ flush privileges;
 #### 3. 弹性扩容 
 首先用户在创建集群的时候需要设置集群初始化大小，这个借助于Helm的`Values.pd.initialsize`、`Values.pd.replicas`、`Values.tikv.replicas`和`Values.tidb.replicas`可以实现。
 
-当集群遇到扩容的需要时，需要通过修改StatefulSet的replicas字段来调整副本数，需要注意的亮点：一是建议逐个增加节点，二是扩容的启动参数不同于新建集群的启动参数。所以修改PD StatefulSet的启动脚本为：
+当集群遇到扩容的需要时，需要通过修改StatefulSet的replicas字段来调整副本数，需要注意的两点：一是建议逐个增加节点，二是扩容的启动参数不同于新建集群的启动参数。所以修改PD StatefulSet的启动脚本为：
 
 ```yaml
   containers:
