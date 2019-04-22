@@ -231,7 +231,7 @@ flush privileges;
             --advertise-peer-urls=http://${HOSTNAME}.${PEER_SERVICE_NAME}:2380 \
             --initial-cluster=${PEERS}
 ```
-除PD以外，TiKV和TiDB无需调整启动参数。在操作的时候可以通过`kubectl scale`完成增加副本数，也可以通过helm命令实现，比如`helm upgrade --set pd.replicas=4 tidb ./tidb`。
+除PD以外，TiKV和TiDB无需调整启动参数。在操作的时候可以通过`kubectl scale`完成增加副本数，也可以通过helm命令实现，比如`helm upgrade --set pd.replicas=4 tidb helm/tidb`。
 
 面对缩容的情况时，重点需要解决节点注销的问题，要么通过PreStop钩子实现，要么可以使用ValidatingAdmissionWebhook来间接实现。同样下面列出PD的注销脚本：
 ```yaml
